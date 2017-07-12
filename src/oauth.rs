@@ -1,64 +1,84 @@
+#![allow(dead_code)]
 use chrono;
-use serde_qs as qs;
-use std::io;
+use openssl;
 use rand::{self, Rng};
+use rustc_serialize::base64::{self, ToBase64};
+use serde_qs as qs;
+use std::{error, io, fmt};
 
-
-
-/*
-Client(
-    client_key=consumer_key,
-    resource_owner_key=consumer_key,
-    signature_method=SIGNATURE_RSA,
-    signature_type=SIGNATURE_TYPE_AUTH_HEADER,
-    rsa_key=rsa_key,
-
-    client_secret=None,
-    resource_owner_secret=None,
-    callback_uri=None,
-    verifier=None,
-    realm=None, nonce=None, timestamp=None)
-*/
-
-const SIGNATURE_HMAC: &'static str = "HMAC-SHA1";
-const SIGNATURE_RSA: &'static str = "RSA-SHA1";
+pub const SIGNATURE_HMAC: &'static str = "HMAC-SHA1";
+pub const SIGNATURE_RSA: &'static str = "RSA-SHA1";
 
 #[derive(Serialize)]
-struct Params {
-    oauth_consumer_key: String,
-    oauth_nonce: String,
-    oauth_signature_method: &'static str,
-    oauth_timestamp: String,
+pub struct Params {
+    // IMPORTANT: Fields must be alphabetically sorted
+
+    // TODO: Some sort of builder pattern or mode enumeration may be better
+
     #[serde(skip_serializing_if = "Option::is_none")]
-    oauth_token: Option<String>,
+    pub realm: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oauth_callback: Option<String>,
+    pub oauth_consumer_key: String,
     #[serde(skip_serializing)]
-    oauth_token_secret: Option<String>,
-    oauth_version: &'static str,
+    pub oauth_consumer_secret: Option<String>,
+    pub oauth_nonce: String,
+    pub oauth_signature_method: &'static str,
+    pub oauth_timestamp: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oauth_token: Option<String>,
+    #[serde(skip_serializing)]
+    pub oauth_token_secret: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub oauth_verifier: Option<String>,
+    pub oauth_version: &'static str,
 }
 
+
 impl Params {
-    fn new<Str: Into<String>>(consumer_key: Str, signature_method: &'static str) -> Result<Params, io::Error> {
+    pub fn new<Str: Into<String>>(consumer_key: Str, signature_method: &'static str) -> Result<Params, Error> {
         Ok(Params{
+            realm: None,
+            oauth_callback: None,
             oauth_consumer_key: consumer_key.into(),
-            oauth_nonce: generate_nonce()?, // FIXME: Don't unwrap
+            oauth_consumer_secret: None,
+            oauth_nonce: generate_nonce()?,
             oauth_signature_method: signature_method,
             oauth_timestamp: generate_timestamp(),
             oauth_token: None,
             oauth_token_secret: None,
+            oauth_verifier: None,
             oauth_version: "1.0",
         })
     }
 
-    fn signature_base(method: &str, base_url: &str, params: &str) -> Result<String, qs::ser::Error> {
-        Ok(format!("{}&{}&{}", method.to_uppercase(), qs::to_string(&base_url)?, qs::to_string(&params)?))
+    pub fn sign_request(&self, method: &str, base_url: &str, keypair: &openssl::pkey::PKey) -> Result<String, Error> {
+        let message = self.signature_base(method, base_url)?;
+        let mut signer = openssl::sign::Signer::new(openssl::hash::MessageDigest::sha1(), keypair)?;
+        signer.update(message.as_bytes())?;
+        let signature_bytes = signer.finish()?;
+        let signature_base64 = signature_bytes.to_base64(base64::STANDARD);
+
+        Ok(format!("OAuth oauth_consumer_key=\"{}\", oauth_nonce=\"{}\", oauth_signature=\"{}\", oauth_signature_method=\"{}\", oauth_timestamp=\"{}\", oauth_version=\"1.0\"",
+                   self.oauth_consumer_key, self.oauth_nonce, signature_base64, self.oauth_signature_method, self.oauth_timestamp))
     }
 
-    fn signing_key(consumer_secret: &str, token_secret: &str) -> String {
-        format!("{}&{}", consumer_secret, token_secret)
+    fn signature_base(&self, method: &str, base_url: &str) -> Result<String, Error> {
+        Ok(format!("{}&{}&{}", method.to_uppercase(), qs::to_string(&base_url)?, qs::to_string(self)?))
+    }
+
+    fn signing_key(&self) -> Result<String, Error> {
+        let consumer_secret = self.oauth_consumer_secret.as_ref().map(|s| s.as_ref()).unwrap_or("");
+        if self.oauth_signature_method == SIGNATURE_RSA {
+            Ok(consumer_secret.to_string())
+        } else {
+            let token_secret = self.oauth_token_secret.as_ref().map(|s| s.as_ref()).unwrap_or("");
+            Ok(format!("{}&{}", qs::to_string(&consumer_secret)?, qs::to_string(&token_secret)?))
+        }
     }
 }
 
-fn generate_nonce() -> Result<String, io::Error> {
+fn generate_nonce() -> Result<String, Error> {
     let alphabet = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let mut rng = rand::OsRng::new()?;
     let mut nonce = String::with_capacity(32);
@@ -72,17 +92,36 @@ fn generate_timestamp() -> String {
     chrono::UTC::now().timestamp().to_string()
 }
 
-fn header(consumer_key: &str, nonce: &str, signature: &str, signature_method: &'static str, timestamp: &str) -> String {
-    format!("
-    OAuth oauth_consumer_key=\"{}\",
-          oauth_nonce=\"{}\",
-          oauth_signature=\"{}\",
-          oauth_signature_method=\"{}\",
-          oauth_timestamp=\"{}\",
-          oauth_version=\"1.0\"",
-          consumer_key,
-          nonce,
-          signature,
-          signature_method,
-          timestamp)
+
+#[derive(Debug)]
+pub struct Error(Box<error::Error + Send>);
+
+impl error::Error for Error {
+    fn description(&self) -> &str { "oauth error" }
+    fn cause(&self) -> Option<&error::Error> { Some(&*self.0) }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(error::Error::description(self))?;
+        write!(f, ": {}", self.0)
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Error {
+        Error(Box::new(err))
+    }
+}
+
+impl From<qs::ser::Error> for Error {
+    fn from(err: qs::ser::Error) -> Error {
+        Error(Box::new(err))
+    }
+}
+
+impl From<openssl::error::ErrorStack> for Error {
+    fn from(err: openssl::error::ErrorStack) -> Error {
+        Error(Box::new(err))
+    }
 }

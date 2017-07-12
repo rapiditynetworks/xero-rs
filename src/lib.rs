@@ -8,8 +8,10 @@
 
 extern crate chrono;
 extern crate hyper;
-extern crate hyper_native_tls;
+extern crate hyper_openssl;
+extern crate openssl;
 extern crate rand;
+extern crate rustc_serialize;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -19,3 +21,7 @@ extern crate serde_qs;
 mod client;
 mod error;
 mod oauth;
+
+pub use client::{Client, Credentials};
+pub use openssl::rsa::Rsa;
+pub use openssl::pkey::PKey;

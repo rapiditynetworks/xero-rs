@@ -1,4 +1,5 @@
 use hyper;
+use oauth;
 use serde_json as json;
 use std::error;
 use std::fmt;
@@ -13,6 +14,8 @@ pub enum Error {
     Http(hyper::Error),
     /// An error reading the response body.
     Io(io::Error),
+    /// An error while authenticating with OAuth
+    OAuth(oauth::Error),
     /// An error converting between wire format and Rust types.
     Conversion(Box<error::Error + Send>),
 }
@@ -24,6 +27,7 @@ impl fmt::Display for Error {
             Error::Xero(ref err) => write!(f, ": {}", err),
             Error::Http(ref err) => write!(f, ": {}", err),
             Error::Io(ref err) => write!(f, ": {}", err),
+            Error::OAuth(ref err) => write!(f, ": {}", err),
             Error::Conversion(ref err) => write!(f, ": {}", err),
         }
     }
@@ -32,9 +36,10 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
-            Error::Xero(_) => "error reported by xero maps",
-            Error::Http(_) => "error communicating with xero maps",
-            Error::Io(_) => "error reading response from xero maps",
+            Error::Xero(_) => "error reported by xero",
+            Error::Http(_) => "error communicating with xero",
+            Error::Io(_) => "error reading response from xero",
+            Error::OAuth(_) => "error performing oauth with xero",
             Error::Conversion(_) => "error converting between wire format and Rust types",
         }
     }
@@ -44,6 +49,7 @@ impl error::Error for Error {
             Error::Xero(ref err) => Some(err),
             Error::Http(ref err) => Some(err),
             Error::Io(ref err) => Some(err),
+            Error::OAuth(ref err) => Some(err),
             Error::Conversion(ref err) => Some(&**err),
         }
     }
@@ -64,6 +70,12 @@ impl From<hyper::Error> for Error {
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error::Io(err)
+    }
+}
+
+impl From<oauth::Error> for Error {
+    fn from(err: oauth::Error) -> Error {
+        Error::OAuth(err)
     }
 }
 

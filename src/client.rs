@@ -2,23 +2,31 @@ use error::{Error, RequestError};
 use hyper::Client as HttpClient;
 use hyper::client::RequestBuilder;
 use hyper::net::HttpsConnector;
+use hyper_openssl::OpensslClient;
+use oauth;
+use openssl;
 use serde;
 use serde_json as json;
-use std::collections::HashMap;
 use std::io::Read;
 
+// TODO: Probably use trait
 pub enum Credentials {
     Private(PrivateCredentials)
 }
 
 impl Credentials {
-    fn private<Str: Into<String>>(consumer_key: Str, rsa_key: Str) -> Credentials {
-        Credentials::Private(PrivateCredentials{})
+    pub fn private<Str: Into<String>>(consumer_key: Str, rsa_key: openssl::pkey::PKey) -> Result<Credentials, Error> {
+        let key = consumer_key.into();
+        let mut auth = oauth::Params::new(key.clone(), oauth::SIGNATURE_RSA)?;
+        auth.oauth_token = Some(key);
+        let private = PrivateCredentials{auth: auth, keypair: rsa_key};
+        Ok(Credentials::Private(private))
     }
 }
 
-struct PrivateCredentials {
-
+pub struct PrivateCredentials {
+    auth: oauth::Params,
+    keypair: openssl::pkey::PKey,
 }
 
 pub struct Client {
@@ -32,9 +40,7 @@ impl Client {
     }
 
     pub fn new(creds: Credentials) -> Client {
-        use hyper_native_tls::NativeTlsClient;
-
-        let tls = NativeTlsClient::new().unwrap();
+        let tls = OpensslClient::new().unwrap();
         let connector = HttpsConnector::new(tls);
         let client = HttpClient::with_connector(connector);
         Client {client: client, creds: creds}
