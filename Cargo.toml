@@ -1,0 +1,19 @@
+[package]
+name = "xero"
+version = "0.1.0"
+description = "API bindings for the Xero 2.0 Accounting API"
+authors = ["Kevin Stenerson <kevin@rapiditynetworks.com>"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/rapiditynetworks/xero-rs"
+documentation = "https://docs.rs/xero-rs"
+keywords = ["xero", "accounting", "api"]
+categories = ["api-bindings"]
+
+[dependencies]
+hyper = "^0.10"
+hyper-openssl = "^0.2"
+serde = "^0.9"
+serde_derive = "^0.9"
+serde_json = "^0.9"
+serde_qs = "0.0.2"
