@@ -4,6 +4,7 @@ use serde_json as json;
 use std::error;
 use std::fmt;
 use std::io;
+use xml;
 
 /// An error encountered when communicating with the Xero API.
 #[derive(Debug)]
@@ -76,6 +77,12 @@ impl From<io::Error> for Error {
 impl From<oauth::Error> for Error {
     fn from(err: oauth::Error) -> Error {
         Error::OAuth(err)
+    }
+}
+
+impl From<xml::writer::Error> for Error {
+    fn from(err: xml::writer::Error) -> Error {
+        Error::Conversion(Box::new(err))
     }
 }
 

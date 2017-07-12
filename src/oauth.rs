@@ -3,7 +3,7 @@ use chrono;
 use openssl;
 use rand::{self, Rng};
 use rustc_serialize::base64::{self, ToBase64};
-use serde_qs as qs;
+use serde_urlencoded as urlencoded;
 use std::{error, io, fmt};
 
 pub const SIGNATURE_HMAC: &'static str = "HMAC-SHA1";
@@ -65,7 +65,7 @@ impl Params {
     }
 
     fn signature_base(&self, method: &str, base_url: &str) -> Result<String, Error> {
-        Ok(format!("{}&{}&{}", method.to_uppercase(), qs::to_string(&base_url)?, qs::to_string(self)?))
+        Ok(format!("{}&{}&{}", method.to_uppercase(), urlencoded::to_string(&base_url)?, urlencoded::to_string(self)?))
     }
 
     fn signing_key(&self) -> Result<String, Error> {
@@ -74,7 +74,7 @@ impl Params {
             Ok(consumer_secret.to_string())
         } else {
             let token_secret = self.oauth_token_secret.as_ref().map(|s| s.as_ref()).unwrap_or("");
-            Ok(format!("{}&{}", qs::to_string(&consumer_secret)?, qs::to_string(&token_secret)?))
+            Ok(format!("{}&{}", urlencoded::to_string(&consumer_secret)?, urlencoded::to_string(&token_secret)?))
         }
     }
 }
@@ -115,8 +115,8 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<qs::ser::Error> for Error {
-    fn from(err: qs::ser::Error) -> Error {
+impl From<urlencoded::ser::Error> for Error {
+    fn from(err: urlencoded::ser::Error) -> Error {
         Error(Box::new(err))
     }
 }

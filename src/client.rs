@@ -2,7 +2,7 @@ use application::Application;
 use error::{Error, RequestError};
 use hyper::Client as HttpClient;
 use hyper::client::RequestBuilder;
-use hyper::header::Headers;
+use hyper::header::{Accept, ContentType, Headers};
 use hyper::net::HttpsConnector;
 use hyper_openssl::OpensslClient;
 use serde;
@@ -18,7 +18,7 @@ pub struct Client {
 
 impl Client {
     fn url(path: &str) -> String {
-        format!("https://api.xero.com/{}", &path[1..])
+        format!("https://api.xero.com/api.xro/2.0/{}", &path[1..])
     }
 
     pub fn new<App: Application + 'static>(app: App) -> Client {
@@ -30,14 +30,26 @@ impl Client {
 
     pub fn get<'a, T: serde::Deserialize>(&'a self, path: &'a str) -> Result<T, Error> {
         let url = Client::url(path);
-        let headers = self.headers("GET", &url)?;
+        let headers = self.headers("GET", &url, None)?;
         let request = self.client.get(&url).headers(headers);
         send(request)
     }
 
-    fn headers(&self, method: &str, url: &str) -> Result<Headers, Error> {
+    pub fn put<T: serde::Deserialize>(&self, path: &str, body: &[u8]) -> Result<T, Error> {
+        let url = Client::url(path);
+        let headers = self.headers("PUT", &url, Some(body))?;
+        let request = self.client.post(&url).headers(headers).body(body);
+        send(request)
+    }
+
+    fn headers(&self, method: &str, url: &str, body: Option<&[u8]>) -> Result<Headers, Error> {
+        // TODO: Add body to signature
         let signature = self.application.get_signature(method, url)?;
         let mut headers = Headers::new();
+        headers.set(Accept::json());
+        if method != "GET" {
+            headers.set(ContentType::form_url_encoded());
+        }
         headers.set_raw("Authorization", vec![signature.as_bytes().to_vec()]);
         Ok(headers)
     }

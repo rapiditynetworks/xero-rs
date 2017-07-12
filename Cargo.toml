@@ -11,7 +11,7 @@ keywords = ["xero", "api", "accounting", "payroll"]
 categories = ["api-bindings"]
 
 [dependencies]
-chrono = "^0.3"
+chrono = { version = "^0.3", features = ["serde"] }
 hyper = "^0.10"
 hyper-openssl = "^0.2"
 openssl = "0.9.14"
@@ -20,4 +20,5 @@ rustc-serialize = "0.3"
 serde = "^0.9"
 serde_derive = "^0.9"
 serde_json = "^0.9"
-serde_qs = "0.0.2"
+serde_urlencoded = "^0.4"
+xml-rs = "0.6"

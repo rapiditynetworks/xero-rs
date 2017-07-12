@@ -16,14 +16,21 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate serde_qs;
+extern crate serde_urlencoded;
+extern crate xml;
 
 mod application;
 mod client;
+pub mod encoding;
 mod error;
 mod oauth;
+mod resources;
 
 pub use application::{Application, PrivateApplication};
 pub use client::Client;
 pub use openssl::rsa::Rsa;
 pub use openssl::pkey::PKey;
+pub mod accounting {
+    pub use resources::contacts::*;
+    pub use resources::invoices::*;
+}
