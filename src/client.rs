@@ -1,37 +1,19 @@
+use application::Application;
 use error::{Error, RequestError};
 use hyper::Client as HttpClient;
 use hyper::client::RequestBuilder;
+use hyper::header::Headers;
 use hyper::net::HttpsConnector;
 use hyper_openssl::OpensslClient;
-use oauth;
-use openssl;
 use serde;
 use serde_json as json;
 use std::io::Read;
 
 // TODO: Probably use trait
-pub enum Credentials {
-    Private(PrivateCredentials)
-}
-
-impl Credentials {
-    pub fn private<Str: Into<String>>(consumer_key: Str, rsa_key: openssl::pkey::PKey) -> Result<Credentials, Error> {
-        let key = consumer_key.into();
-        let mut auth = oauth::Params::new(key.clone(), oauth::SIGNATURE_RSA)?;
-        auth.oauth_token = Some(key);
-        let private = PrivateCredentials{auth: auth, keypair: rsa_key};
-        Ok(Credentials::Private(private))
-    }
-}
-
-pub struct PrivateCredentials {
-    auth: oauth::Params,
-    keypair: openssl::pkey::PKey,
-}
 
 pub struct Client {
     client: HttpClient,
-    creds: Credentials,
+    application: Box<Application>
 }
 
 impl Client {
@@ -39,17 +21,25 @@ impl Client {
         format!("https://api.xero.com/{}", &path[1..])
     }
 
-    pub fn new(creds: Credentials) -> Client {
+    pub fn new<App: Application + 'static>(app: App) -> Client {
         let tls = OpensslClient::new().unwrap();
         let connector = HttpsConnector::new(tls);
         let client = HttpClient::with_connector(connector);
-        Client {client: client, creds: creds}
+        Client {client: client, application: Box::new(app)}
     }
 
     pub fn get<'a, T: serde::Deserialize>(&'a self, path: &'a str) -> Result<T, Error> {
         let url = Client::url(path);
-        let request = self.client.get(&url);
+        let headers = self.headers("GET", &url)?;
+        let request = self.client.get(&url).headers(headers);
         send(request)
+    }
+
+    fn headers(&self, method: &str, url: &str) -> Result<Headers, Error> {
+        let signature = self.application.get_signature(method, url)?;
+        let mut headers = Headers::new();
+        headers.set_raw("Authorization", vec![signature.as_bytes().to_vec()]);
+        Ok(headers)
     }
 }
 

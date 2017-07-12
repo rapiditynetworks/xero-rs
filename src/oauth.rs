@@ -52,7 +52,8 @@ impl Params {
         })
     }
 
-    pub fn sign_request(&self, method: &str, base_url: &str, keypair: &openssl::pkey::PKey) -> Result<String, Error> {
+    // TODO: Handle url with query paramters
+    pub fn sign_request(&self, keypair: &openssl::pkey::PKey, method: &str, base_url: &str) -> Result<String, Error> {
         let message = self.signature_base(method, base_url)?;
         let mut signer = openssl::sign::Signer::new(openssl::hash::MessageDigest::sha1(), keypair)?;
         signer.update(message.as_bytes())?;

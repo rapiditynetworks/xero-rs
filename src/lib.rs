@@ -18,10 +18,12 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate serde_qs;
 
+mod application;
 mod client;
 mod error;
 mod oauth;
 
-pub use client::{Client, Credentials};
+pub use application::{Application, PrivateApplication};
+pub use client::Client;
 pub use openssl::rsa::Rsa;
 pub use openssl::pkey::PKey;
