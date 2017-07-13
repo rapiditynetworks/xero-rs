@@ -154,7 +154,7 @@ impl Invoice {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Invoices {
-    invoices: Vec<Invoice>
+    pub invoices: Vec<Invoice>
 }
 
 impl Invoices {

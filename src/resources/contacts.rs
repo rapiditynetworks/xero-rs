@@ -40,34 +40,34 @@ impl XmlSerializable for AddressType {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Address {
-    address_type: AddressType,
+    pub address_type: AddressType,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    address_line1: String,
+    pub address_line1: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    address_line2: String,
+    pub address_line2: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    address_line3: String,
+    pub address_line3: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    address_line4: String,
+    pub address_line4: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    city: String,
+    pub city: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    region: String,
+    pub region: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    postal_code: String,
+    pub postal_code: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    country: String,
+    pub country: String,
     #[serde(default)]
     #[serde(skip_serializing_if = "String::is_empty")]
-    attention_to: String,
+    pub attention_to: String,
 }
 
 impl<'a> XmlSerializable for Address {
@@ -110,10 +110,10 @@ impl XmlSerializable for PhoneType {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Phone {
-    phone_type: PhoneType,
-    phone_number: String,
-    phone_area_code: String,
-    phone_country_code: String,
+    pub phone_type: PhoneType,
+    pub phone_number: String,
+    pub phone_area_code: String,
+    pub phone_country_code: String,
 }
 
 impl<'a> XmlSerializable for Phone {
@@ -254,7 +254,7 @@ impl Contact {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Contacts {
-    contacts: Vec<Contact>,
+    pub contacts: Vec<Contact>,
 }
 
 impl Contacts {
