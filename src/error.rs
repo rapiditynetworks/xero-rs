@@ -111,7 +111,7 @@ pub struct ErrorElement {
 pub enum RequestError {
     Status(StatusError),
     Validation(ValidationError),
-    UnknownError,
+    UnknownError(String),
 }
 
 #[derive(Debug, Deserialize)]
