@@ -17,7 +17,7 @@ travis-ci = {repository = "rapiditynetworks/xero-rs"}
 chrono = { version = "^0.3", features = ["serde"] }
 hyper = "^0.10"
 hyper-openssl = "^0.2"
-openssl = "0.9.14"
+openssl = "^0.9"
 percent-encoding = "1.0.0"
 rand = "0.3.15"
 rustc-serialize = "0.3"
