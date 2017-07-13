@@ -1,6 +1,7 @@
 xero-rs
 =======
 
+[![xero-rs on Travis CI](https://travis-ci.org/rapiditynetworks/xero-rs.svg?branch=master)](https://travis-ci.org/rapiditynetworks/xero-rs)
 [![xero-rs on crates.io](https://img.shields.io/crates/v/xero.svg)](https://crates.io/crates/xero)
 [![xero-rs on docs.rs](https://docs.rs/xero/badge.svg)](https://docs.rs/xero)
 
