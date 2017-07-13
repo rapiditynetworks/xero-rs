@@ -13,6 +13,12 @@ pub enum InvoiceType {
     AccountsReceivable,
 }
 
+impl Default for InvoiceType {
+    fn default() -> Self {
+        InvoiceType::AccountsReceivable
+    }
+}
+
 impl XmlSerializable for InvoiceType {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
         match *self {
@@ -79,26 +85,21 @@ pub struct LineItemParams<'a> {
 
 impl<'a> XmlSerializable for LineItemParams<'a> {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
-        if let Some(code) = self.item_code {
-            xml.element("UnitAmount", &code)?;
-        }
+        xml.element_opt("ItemCode", &self.item_code)?;
         xml.element("Description", &self.description)?;
         xml.element("Quantity", &self.quantity)?;
         xml.element("UnitAmount", &self.unit_amount)?;
         xml.element("AccountCode", &self.account_code)?;
-        if let Some(rate) = self.discount_rate {
-            xml.element("DiscountRate", &rate)?;
-        }
-        Ok(())
+        xml.element_opt("DiscountRate", &self.discount_rate)
     }
 }
 
-#[derive(Serialize)]
+#[derive(Default, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct InvoiceParams<'a> {
     #[serde(rename = "Type")]
-    pub invoice_type: InvoiceType,
-    pub contact: ContactIdParams<'a>,
+    pub invoice_type: InvoiceType, // Required
+    pub contact: ContactIdParams<'a>, // Required
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<NaiveDate>,
@@ -112,44 +113,57 @@ pub struct InvoiceParams<'a> {
     pub sent_to_contact: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub line_amount_types: Option<LineAmountType>,
-    pub line_items: Vec<LineItemParams<'a>>,
+    pub line_items: Vec<LineItemParams<'a>>, // Required
 }
 
 impl<'a> XmlSerializable for InvoiceParams<'a> {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
         xml.element("Type", &self.invoice_type)?;
         xml.element("Contact", &self.contact)?;
-        if let Some(date) = self.date { xml.element("Date", &date.format("%Y-%m-%d").to_string())?; }
-        if let Some(date_due) = self.date_due { xml.element("DateDue", &date_due.format("%Y-%m-%d").to_string())?; }
-        if let Some(url) = self.url { xml.element("Url", &url)?; }
-        if let Some(status) = self.status { xml.element("Status", &status)?; }
-        if let Some(sent_to_contact) = self.sent_to_contact { xml.element("SentToContact", &sent_to_contact)?; }
+        if let Some(date) = self.date {
+            xml.element("Date", &date.format("%Y-%m-%d").to_string())?;
+        }
+        if let Some(date_due) = self.date_due {
+            xml.element("DateDue", &date_due.format("%Y-%m-%d").to_string())?;
+        }
+        xml.element_opt("Url", &self.url)?;
+        xml.element_opt("Status", &self.status)?;
+        xml.element_opt("SentToContact", &self.sent_to_contact)?;
         xml.array("LineItems", "LineItem", &self.line_items)
     }
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct Invoice {
     /* TODO: Retrieve */
 }
 
 impl Invoice {
-    pub fn create(client: &Client, invoice: InvoiceParams) -> Result<(), Error> {
+    pub fn put(client: &Client, invoice: InvoiceParams) -> Result<Invoice, Error> {
         let mut body = Vec::new();
         {
             let mut xml = XmlWriter::new(&mut body);
             xml.element("Invoice", &invoice)?;
         }
-        client.put("/Invoices", body.as_slice())?;
-        Ok(())
+        let invoices: Invoices = client.put("/Invoices", body.as_slice())?;
+        Ok(invoices.invoices.into_iter().next().expect("Expect invoice after successful put"))
     }
+}
 
-    pub fn create_many(client: &Client, invoices: Vec<InvoiceParams>) -> Result<(), Error> {
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct Invoices {
+    invoices: Vec<Invoice>
+}
+
+impl Invoices {
+    pub fn put(client: &Client, invoices: Vec<InvoiceParams>) -> Result<Invoices, Error> {
         let mut body = Vec::new();
         {
             let mut xml = XmlWriter::new(&mut body);
             xml.array("Invoices", "Invoice", &invoices)?;
         }
-        client.put("/Invoices", body.as_slice())?;
-        Ok(())
+        client.put("/Invoices", body.as_slice())
     }
 }

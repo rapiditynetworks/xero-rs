@@ -34,6 +34,16 @@ impl<'a> XmlWriter<'a> {
         self.end_element()
     }
 
+    pub fn element_opt<T: XmlSerializable>(&mut self, label: &str, content: &Option<T>) -> Result<(), XmlError> {
+        if let Some(ref content) = *content {
+            self.start_element(label)?;
+            content.write(self)?;
+            self.end_element()
+        } else {
+            Ok(())
+        }
+    }
+
     pub fn array<T: XmlSerializable>(&mut self, array: &str, element: &str, items: &Vec<T>) -> Result<(), XmlError> {
         self.start_element(array)?;
         for item in items {

@@ -19,7 +19,7 @@ fn _json(example: &'static str) -> Option<String> {
 fn serialize_invoice_params() {
     let invoice = InvoiceParams{
         invoice_type: InvoiceType::AccountsReceivable,
-        contact: ContactIdParams{id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
+        contact: ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
         date: None,
         date_due: None,
         status: None,
@@ -45,7 +45,7 @@ fn serialize_invoice_params() {
 
     let invoice = InvoiceParams{
         invoice_type: InvoiceType::AccountsReceivable,
-        contact: ContactIdParams{id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
+        contact: ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
         date: Some(NaiveDate::from_ymd(2009, 08, 30)),
         date_due: Some(NaiveDate::from_ymd(2009, 09, 20)),
         url: Some("https://twitter.com/SuperTransparentInvoices/status/865425833631993856"),

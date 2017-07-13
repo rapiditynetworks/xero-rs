@@ -6,25 +6,34 @@ use rustc_serialize::base64::{self, ToBase64};
 use serde_urlencoded as urlencoded;
 use std::{error, io, fmt};
 
+mod percent {
+    use percent_encoding::{utf8_percent_encode, SIMPLE_ENCODE_SET};
+    define_encode_set! {
+        // All non alphanumeric characters on the (US) keyboard, except '~', '-', '_', and '.'
+        pub PERCENT_ENCODE_SET = [SIMPLE_ENCODE_SET]
+            | {'`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '=', '[', ']', '{', '}', '|', '\\', ';', ':', '\'', '"', ',', '<', '>', '/', '?'}
+    }
+
+    pub fn to_string(value: &str) -> String {
+        utf8_percent_encode(value, PERCENT_ENCODE_SET).to_string()
+    }
+}
+
 pub const SIGNATURE_HMAC: &'static str = "HMAC-SHA1";
 pub const SIGNATURE_RSA: &'static str = "RSA-SHA1";
 
 #[derive(Serialize)]
 pub struct Params {
-    // IMPORTANT: Fields must be alphabetically sorted
-
     // TODO: Some sort of builder pattern or mode enumeration may be better
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing)]
     pub realm: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub oauth_callback: Option<String>,
     pub oauth_consumer_key: String,
     #[serde(skip_serializing)]
     pub oauth_consumer_secret: Option<String>,
-    pub oauth_nonce: String,
     pub oauth_signature_method: &'static str,
-    pub oauth_timestamp: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub oauth_token: Option<String>,
     #[serde(skip_serializing)]
@@ -42,9 +51,7 @@ impl Params {
             oauth_callback: None,
             oauth_consumer_key: consumer_key.into(),
             oauth_consumer_secret: None,
-            oauth_nonce: generate_nonce()?,
             oauth_signature_method: signature_method,
-            oauth_timestamp: generate_timestamp(),
             oauth_token: None,
             oauth_token_secret: None,
             oauth_verifier: None,
@@ -54,27 +61,47 @@ impl Params {
 
     // TODO: Handle url with query paramters
     pub fn sign_request(&self, keypair: &openssl::pkey::PKey, method: &str, base_url: &str) -> Result<String, Error> {
-        let message = self.signature_base(method, base_url)?;
+        let signature: String;
+        let nonce = generate_nonce()?;
+        let timestamp = generate_timestamp();
+        let mut params = self.get_oauth_params(&nonce, &timestamp);
+
+        let message = self.get_signature_base(method, base_url, &urlencoded::to_string(&params)?)?;
         let mut signer = openssl::sign::Signer::new(openssl::hash::MessageDigest::sha1(), keypair)?;
         signer.update(message.as_bytes())?;
         let signature_bytes = signer.finish()?;
-        let signature_base64 = signature_bytes.to_base64(base64::STANDARD);
+        signature = percent::to_string(&signature_bytes.to_base64(base64::STANDARD));
+        params.push(("oauth_signature", &signature));
 
-        Ok(format!("OAuth oauth_consumer_key=\"{}\", oauth_nonce=\"{}\", oauth_signature=\"{}\", oauth_signature_method=\"{}\", oauth_timestamp=\"{}\", oauth_version=\"1.0\"",
-                   self.oauth_consumer_key, self.oauth_nonce, signature_base64, self.oauth_signature_method, self.oauth_timestamp))
+        let formatted: Vec<String> = params.iter().map(|p| format!("{}=\"{}\"", p.0, p.1)).collect();
+        let header = formatted.join(", ");
+        Ok(format!("OAuth {}", header))
     }
 
-    fn signature_base(&self, method: &str, base_url: &str) -> Result<String, Error> {
-        Ok(format!("{}&{}&{}", method.to_uppercase(), urlencoded::to_string(&base_url)?, urlencoded::to_string(self)?))
+    fn get_oauth_params<'a>(&'a self, nonce: &'a str, timestamp: &'a str) -> Vec<(&'a str, &'a str)> {
+        let mut params: Vec<(&'a str, &'a str)> = Vec::new();
+        if let Some(ref callback) = self.oauth_callback { params.push(("oauth_callback", callback)); }
+        params.push(("oauth_consumer_key", &self.oauth_consumer_key));
+        params.push(("oauth_nonce", nonce));
+        params.push(("oauth_signature_method", self.oauth_signature_method));
+        params.push(("oauth_timestamp", timestamp));
+        if let Some(ref token) = self.oauth_token { params.push(("oauth_token", token)); }
+        if let Some(ref verifier) = self.oauth_verifier { params.push(("oauth_verifier", verifier)); }
+        params.push(("oauth_version", self.oauth_version));
+        params
     }
 
-    fn signing_key(&self) -> Result<String, Error> {
+    fn get_signature_base(&self, method: &str, base_url: &str, params: &str) -> Result<String, Error> {
+        Ok(format!("{}&{}&{}", method.to_uppercase(), percent::to_string(base_url), percent::to_string(params)))
+    }
+
+    fn get_signing_key(&self) -> Result<String, Error> {
         let consumer_secret = self.oauth_consumer_secret.as_ref().map(|s| s.as_ref()).unwrap_or("");
         if self.oauth_signature_method == SIGNATURE_RSA {
             Ok(consumer_secret.to_string())
         } else {
             let token_secret = self.oauth_token_secret.as_ref().map(|s| s.as_ref()).unwrap_or("");
-            Ok(format!("{}&{}", urlencoded::to_string(&consumer_secret)?, urlencoded::to_string(&token_secret)?))
+            Ok(format!("{}&{}", percent::to_string(consumer_secret), percent::to_string(token_secret)))
         }
     }
 }

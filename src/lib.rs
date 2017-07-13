@@ -10,6 +10,8 @@ extern crate chrono;
 extern crate hyper;
 extern crate hyper_openssl;
 extern crate openssl;
+#[macro_use]
+extern crate percent_encoding;
 extern crate rand;
 extern crate rustc_serialize;
 extern crate serde;
@@ -17,6 +19,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate serde_urlencoded;
+extern crate serde_qs;
 extern crate xml;
 
 mod application;

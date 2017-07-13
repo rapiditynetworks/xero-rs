@@ -93,10 +93,48 @@ impl From<json::Error> for Error {
 }
 
 /// An error reported by Xero in a request's response.
-#[derive(Debug, Default, Deserialize)]
-pub struct RequestError {
-     // TODO: What is in a RequestError?
+#[derive(Debug,Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ErrorMessage {
+    message: String,
 }
+#[derive(Debug,Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ErrorElement {
+    has_validation_errors: bool,
+    validation_errors: Vec<ErrorMessage>,
+    // warnings: Vec<_>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum RequestError {
+    Status(StatusError),
+    Validation(ValidationError),
+    UnknownError,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct StatusError {
+    id: String,
+    status: String,
+    #[serde(default)]
+    provider_name: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ValidationError {
+    error_number: i64,
+    #[serde(rename = "Type")]
+    error_type: String,
+    #[serde(default)]
+    message: String,
+    #[serde(default)]
+    elements: Vec<ErrorElement>,
+}
+
 
 impl fmt::Display for RequestError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
