@@ -61,7 +61,9 @@ fn send<T: serde::Deserialize>(request: RequestBuilder) -> Result<T, Error> {
     match status {
         200...299 => {}
         _ => {
-            let error = json::from_str(&body).unwrap_or(RequestError::UnknownError);
+            let error = json::from_str(&body).unwrap_or_else(|_| {
+                RequestError::UnknownError(String::new("Failed to deserialize"))
+            });
             return Err(Error::from(error));
         }
     }
