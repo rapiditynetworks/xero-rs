@@ -10,6 +10,9 @@ documentation = "https://docs.rs/xero-rs"
 keywords = ["xero", "api", "accounting", "payroll"]
 categories = ["api-bindings"]
 
+[badges]
+travis-ci = {repository = "rapiditynetworks/xero-rs"}
+
 [dependencies]
 chrono = { version = "^0.3", features = ["serde"] }
 hyper = "^0.10"
