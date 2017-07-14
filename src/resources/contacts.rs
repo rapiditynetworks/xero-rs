@@ -227,7 +227,7 @@ pub struct Contact {
     #[serde(default)]
     pub tax_number: String,
     pub accounts_receivable_tax_type: Option<String>,
-    pub accounts_payabele_tax_type: Option<String>,
+    pub accounts_payable_tax_type: Option<String>,
     pub addresses: Vec<Address>,
     pub phones: Vec<Phone>,
     pub is_supplier: bool,
