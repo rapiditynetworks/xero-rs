@@ -70,26 +70,36 @@ impl XmlSerializable for LineAmountType {
     }
 }
 
+
+/// ... Some fields missing ...
 #[derive(Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct LineItemParams<'a> {
+    pub description: &'a str, // Required
     #[serde(skip_serializing_if = "Option::is_none")]
     pub item_code: Option<&'a str>,
-    pub description: &'a str,
-    pub quantity: f64,
-    pub unit_amount: f64,
-    pub account_code: &'a str,
+    pub quantity: Option<f64>,
+    pub unit_amount: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line_amount: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tax_amount: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account_code: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub discount_rate: Option<u32>,
+    // ...
 }
 
 impl<'a> XmlSerializable for LineItemParams<'a> {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
-        xml.element_opt("ItemCode", &self.item_code)?;
         xml.element("Description", &self.description)?;
-        xml.element("Quantity", &self.quantity)?;
-        xml.element("UnitAmount", &self.unit_amount)?;
-        xml.element("AccountCode", &self.account_code)?;
+        xml.element_opt("ItemCode", &self.item_code)?;
+        xml.element_opt("Quantity", &self.quantity)?;
+        xml.element_opt("UnitAmount", &self.unit_amount)?;
+        xml.element_opt("LineAmount", &self.line_amount)?;
+        xml.element_opt("TaxAmount", &self.tax_amount)?;
+        xml.element_opt("AccountCode", &self.account_code)?;
         xml.element_opt("DiscountRate", &self.discount_rate)
     }
 }
