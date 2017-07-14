@@ -137,6 +137,7 @@ impl<'a> XmlSerializable for ContactIdParams<'a> {
     }
 }
 
+/// ... Some fields missing ...
 #[derive(Default, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContactParams<'a> {
@@ -207,6 +208,7 @@ impl<'a> XmlSerializable for ContactParams<'a> {
     }
 }
 
+/// ... Some fields missing ...
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Contact {

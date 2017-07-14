@@ -17,17 +17,8 @@ fn _json(example: &'static str) -> Option<String> {
 
 #[test]
 fn serialize_invoice_params() {
-    let invoice = InvoiceParams{
-        invoice_type: InvoiceType::AccountsReceivable,
-        contact: ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
-        date: None,
-        date_due: None,
-        status: None,
-        url: None,
-        sent_to_contact: None,
-        line_amount_types: None,
-        line_items: vec![],
-    };
+    let mut invoice = InvoiceParams::default();
+    invoice.contact = ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"};
 
     assert_eq!(invoice.to_xml().ok(), _xml("
 <Type>ACCREC</Type>
@@ -48,6 +39,8 @@ fn serialize_invoice_params() {
         contact: ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
         date: Some(NaiveDate::from_ymd(2009, 08, 30)),
         date_due: Some(NaiveDate::from_ymd(2009, 09, 20)),
+        invoice_number: Some("0010"),
+        reference: Some("Ref:ABC"),
         url: Some("https://twitter.com/SuperTransparentInvoices/status/865425833631993856"),
         status: Some(InvoiceStatus::Authorised),
         sent_to_contact: Some(true),
@@ -70,6 +63,8 @@ assert_eq!(invoice.to_xml().ok(), _xml("
 </Contact>
 <Date>2009-08-30</Date>
 <DateDue>2009-09-20</DateDue>
+<InvoiceNumber>0010</InvoiceNumber>
+<Reference>Ref:ABC</Reference>
 <Url>https://twitter.com/SuperTransparentInvoices/status/865425833631993856</Url>
 <Status>AUTHORISED</Status>
 <SentToContact>true</SentToContact>

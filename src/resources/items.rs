@@ -60,6 +60,7 @@ impl<'a> XmlSerializable for ItemParams<'a> {
     }
 }
 
+/// ... Some fields missing ...
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Item {

@@ -94,17 +94,21 @@ impl<'a> XmlSerializable for LineItemParams<'a> {
     }
 }
 
+/// ... Some fields missing ...
 #[derive(Default, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct InvoiceParams<'a> {
     #[serde(rename = "Type")]
     pub invoice_type: InvoiceType, // Required
     pub contact: ContactIdParams<'a>, // Required
-
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date_due: Option<NaiveDate>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub invoice_number: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -114,6 +118,7 @@ pub struct InvoiceParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub line_amount_types: Option<LineAmountType>,
     pub line_items: Vec<LineItemParams<'a>>, // Required
+    // ...
 }
 
 impl<'a> XmlSerializable for InvoiceParams<'a> {
@@ -126,6 +131,8 @@ impl<'a> XmlSerializable for InvoiceParams<'a> {
         if let Some(date_due) = self.date_due {
             xml.element("DateDue", &date_due.format("%Y-%m-%d").to_string())?;
         }
+        xml.element_opt("InvoiceNumber", &self.invoice_number)?;
+        xml.element_opt("Reference", &self.reference)?;
         xml.element_opt("Url", &self.url)?;
         xml.element_opt("Status", &self.status)?;
         xml.element_opt("SentToContact", &self.sent_to_contact)?;
