@@ -52,7 +52,7 @@ impl<'a> XmlSerializable for ItemParams<'a> {
         xml.element_opt("Description", &self.description)?;
         xml.element_opt("PurchaseDescription", &self.purchase_description)?;
         xml.element_opt("PurchaseDetails", &self.purchase_details)?;
-        xml.element_opt("SalesDetails", &self.purchase_details)?;
+        xml.element_opt("SalesDetails", &self.sales_details)?;
         xml.element_opt("Name", &self.name)?;
         xml.element_opt("InventoryAssetAccountCode", &self.inventory_asset_account_code)?;
         xml.element_opt("IsSold", &self.is_sold)?;
