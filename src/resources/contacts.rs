@@ -245,7 +245,7 @@ impl Contact {
             xml.element("Contact", &params)?;
         }
         let contacts: Contacts = client.put("/Contacts", body.as_slice())?;
-        Ok(contacts.contacts.into_iter().next().expect("Expected contact after successful put"))
+        Ok(contacts.contacts.into_iter().next().expect("Expected contact after successful PUT"))
     }
 }
 

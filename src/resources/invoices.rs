@@ -136,7 +136,7 @@ impl<'a> XmlSerializable for InvoiceParams<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Invoice {
-    /* TODO: Retrieve */
+    /* TODO: GET */
 }
 
 impl Invoice {
@@ -147,14 +147,14 @@ impl Invoice {
             xml.element("Invoice", &invoice)?;
         }
         let invoices: Invoices = client.put("/Invoices", body.as_slice())?;
-        Ok(invoices.invoices.into_iter().next().expect("Expect invoice after successful put"))
+        Ok(invoices.invoices.into_iter().next().expect("Expected invoice after successful PUT"))
     }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Invoices {
-    pub invoices: Vec<Invoice>
+    pub invoices: Vec<Invoice>,
 }
 
 impl Invoices {

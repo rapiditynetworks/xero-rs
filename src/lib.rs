@@ -35,4 +35,5 @@ pub use openssl::pkey::PKey;
 pub mod accounting {
     pub use resources::contacts::*;
     pub use resources::invoices::*;
+    pub use resources::items::*;
 }
