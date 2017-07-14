@@ -247,7 +247,6 @@ impl Contact {
         let contacts: Contacts = client.put("/Contacts", body.as_slice())?;
         Ok(contacts.contacts.into_iter().next().expect("Expected contact after successful put"))
     }
-
 }
 
 #[derive(Debug, Deserialize)]
@@ -259,5 +258,14 @@ pub struct Contacts {
 impl Contacts {
     pub fn get(client: &Client) -> Result<Contacts, Error> {
         client.get("/Contacts")
+    }
+
+    pub fn put(client: &Client, params: Vec<ContactParams>) -> Result<Contacts, Error> {
+        let mut body = Vec::new();
+        {
+            let mut xml = XmlWriter::new(&mut body);
+            xml.array("Contacts", "Contact", &params)?;
+        }
+        client.put("/Contacts", body.as_slice())
     }
 }
