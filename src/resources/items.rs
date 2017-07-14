@@ -5,7 +5,7 @@ use error::Error;
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ItemDetails {
-    pub unit_price: f64,
+    pub unit_price: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account_code: Option<String>,
     #[serde(rename = "COGSAccountCode")]
