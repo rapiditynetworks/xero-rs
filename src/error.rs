@@ -138,12 +138,19 @@ pub struct ValidationError {
 
 impl fmt::Display for RequestError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "RequestError") // TODO: What is in a RequestError?
+        f.write_str(error::Error::description(self))?;
+
+        // TODO: Implement Display for StatusError and ValidationError
+        match *self {
+            RequestError::Status(ref err) => write!(f, ": {:?}", err),
+            RequestError::Validation(ref err) => write!(f, ": {:?}", err),
+            RequestError::UnknownError(ref err) => write!(f, ": {:?}", err),
+        }
     }
 }
 
 impl error::Error for RequestError {
     fn description(&self) -> &str {
-        "error reported by xero maps"
+        "error reported by xero"
     }
 }
