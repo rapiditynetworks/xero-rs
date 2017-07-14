@@ -17,7 +17,7 @@ pub struct ItemDetails {
 
 impl<'a> XmlSerializable for ItemDetails {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
-        xml.element("UnitPrice", &self.unit_price)?;
+        xml.element_opt("UnitPrice", &self.unit_price)?;
         xml.element_opt("AccountCode", &self.account_code)?;
         xml.element_opt("COGSAccountCode", &self.cogs_account_code)?;
         xml.element_opt("TaxType", &self.tax_type)
