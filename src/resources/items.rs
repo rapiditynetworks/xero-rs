@@ -63,7 +63,18 @@ impl<'a> XmlSerializable for ItemParams<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Item {
-    /* TODO: GET */
+    #[serde(rename = "ItemID")]
+    pub item_id: String,
+    pub code: String,
+    pub description: Option<String>,
+    pub purchase_description: Option<String>,
+    pub name: Option<String>,
+    pub is_sold: bool,
+    pub is_purchased: bool,
+    pub sales_details: Option<ItemDetails>,
+    pub purchase_details: Option<ItemDetails>,
+    pub is_tracked_as_inventory: bool,
+    // ...
 }
 
 impl Item {
