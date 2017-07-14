@@ -38,7 +38,7 @@ fn serialize_invoice_params() {
         invoice_type: InvoiceType::AccountsReceivable,
         contact: ContactIdParams{contact_id: "eaa28f49-6028-4b6e-bb12-d8f6278073fc"},
         date: Some(NaiveDate::from_ymd(2009, 08, 30)),
-        date_due: Some(NaiveDate::from_ymd(2009, 09, 20)),
+        due_date: Some(NaiveDate::from_ymd(2009, 09, 20)),
         invoice_number: Some("0010"),
         reference: Some("Ref:ABC"),
         url: Some("https://twitter.com/SuperTransparentInvoices/status/865425833631993856"),
@@ -49,9 +49,11 @@ fn serialize_invoice_params() {
             LineItemParams{
                 item_code: None,
                 description: "Consulting services as agreed",
-                quantity: 5.0,
-                unit_amount: 120.0,
-                account_code: "200",
+                quantity: Some(5.0),
+                unit_amount: Some(120.0),
+                line_amount: None,
+                tax_amount: None,
+                account_code: Some("200"),
                 discount_rate: None,
             }
         ],
@@ -62,12 +64,13 @@ assert_eq!(invoice.to_xml().ok(), _xml("
   <ContactID>eaa28f49-6028-4b6e-bb12-d8f6278073fc</ContactID>
 </Contact>
 <Date>2009-08-30</Date>
-<DateDue>2009-09-20</DateDue>
+<DueDate>2009-09-20</DueDate>
 <InvoiceNumber>0010</InvoiceNumber>
 <Reference>Ref:ABC</Reference>
 <Url>https://twitter.com/SuperTransparentInvoices/status/865425833631993856</Url>
 <Status>AUTHORISED</Status>
 <SentToContact>true</SentToContact>
+<LineAmountTypes>Exclusive</LineAmountTypes>
 <LineItems>
   <LineItem>
     <Description>Consulting services as agreed</Description>

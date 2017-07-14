@@ -1,9 +1,9 @@
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
 use error::Error;
 
-use resources::contacts::ContactIdParams;
+use resources::contacts::{ContactIdParams, ContactSummary};
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum InvoiceType {
@@ -114,7 +114,7 @@ pub struct InvoiceParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub date_due: Option<NaiveDate>,
+    pub due_date: Option<NaiveDate>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub invoice_number: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -138,22 +138,39 @@ impl<'a> XmlSerializable for InvoiceParams<'a> {
         if let Some(date) = self.date {
             xml.element("Date", &date.format("%Y-%m-%d").to_string())?;
         }
-        if let Some(date_due) = self.date_due {
-            xml.element("DateDue", &date_due.format("%Y-%m-%d").to_string())?;
+        if let Some(due_date) = self.due_date {
+            xml.element("DueDate", &due_date.format("%Y-%m-%d").to_string())?;
         }
         xml.element_opt("InvoiceNumber", &self.invoice_number)?;
         xml.element_opt("Reference", &self.reference)?;
         xml.element_opt("Url", &self.url)?;
         xml.element_opt("Status", &self.status)?;
         xml.element_opt("SentToContact", &self.sent_to_contact)?;
+        xml.element_opt("LineAmountTypes", &self.line_amount_types)?;
         xml.array("LineItems", "LineItem", &self.line_items)
     }
 }
 
+/// ... Some fields missing ...
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Invoice {
-    /* TODO: GET */
+    pub contact: ContactSummary,
+    pub date: NaiveDateTime,
+    pub due_date: Option<NaiveDateTime>,
+    pub status: InvoiceStatus,
+    pub line_amount_types: LineAmountType,
+    pub subtotal: f64,
+    pub total_tax: f64,
+    pub total: f64,
+    pub total_discount: Option<f64>,
+    #[serde(rename = "Type")]
+    pub invoice_type: InvoiceType,
+    #[serde(rename = "InvoiceID")]
+    pub invoice_id: String,
+    pub invoice_number: String,
+    pub reference: Option<String>,
+    // ...
 }
 
 impl Invoice {
