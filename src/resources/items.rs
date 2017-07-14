@@ -2,20 +2,20 @@ use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
 use error::Error;
 
-#[derive(Default, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct ItemDetails<'a> {
-    unit_price: f64,
+pub struct ItemDetails {
+    pub unit_price: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    account_code: Option<&'a str>,
+    pub account_code: Option<String>,
     #[serde(rename = "COGSAccountCode")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    cogs_account_code: Option<&'a str>,
+    pub cogs_account_code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    tax_type: Option<&'a str>,
+    pub tax_type: Option<String>,
 }
 
-impl<'a> XmlSerializable for ItemDetails<'a> {
+impl<'a> XmlSerializable for ItemDetails {
     fn write(&self, xml: &mut XmlWriter) ->  Result<(), XmlError> {
         xml.element("UnitPrice", &self.unit_price)?;
         xml.element_opt("AccountCode", &self.account_code)?;
@@ -41,9 +41,9 @@ pub struct ItemParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_purchased: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub purchase_details: Option<ItemDetails<'a>>,
+    pub purchase_details: Option<ItemDetails>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sales_details: Option<ItemDetails<'a>>,
+    pub sales_details: Option<ItemDetails>,
 }
 
 impl<'a> XmlSerializable for ItemParams<'a> {
