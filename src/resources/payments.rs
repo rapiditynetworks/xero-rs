@@ -1,8 +1,9 @@
-use chrono::{NaiveDate, UTC};
+use chrono::{NaiveDate, NaiveDateTime, UTC};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
 use error::Error;
 
+use resources::invoices::InvoiceSummary;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
 pub enum PaymentStatus {
@@ -138,17 +139,26 @@ impl<'a> XmlSerializable for PaymentAccount<'a> {
 #[derive(Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct PaymentParams<'a> {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub invoice: Option<PaymentInvoice<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub credit_note: Option<PaymentCreditNote<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub prepayment: Option<PaymentPrepayment<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub overpayment: Option<PaymentOverpayment<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub account: Option<PaymentAccount<'a>>,
 
     pub date: NaiveDate,
     pub amount: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<&'a str>, // ie. a memo
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub is_reconciled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<PaymentStatus>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub payment_type: Option<PaymentType>,
     // ...
 }
@@ -191,6 +201,15 @@ impl<'a> XmlSerializable for PaymentParams<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Payment {
+    #[serde(rename = "PaymentID")]
+    payment_id: String,
+    date: NaiveDateTime,
+    amount: f64,
+    payment_type: PaymentType,
+    status: PaymentStatus,
+    is_reconciled: bool,
+    // account: Option<_>,
+    invoice: Option<InvoiceSummary>,
     // ...
 }
 

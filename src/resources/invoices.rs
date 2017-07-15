@@ -151,6 +151,17 @@ impl<'a> XmlSerializable for InvoiceParams<'a> {
     }
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct InvoiceSummary {
+    pub contact: ContactSummary,
+    #[serde(rename = "Type")]
+    pub invoice_type: InvoiceType,
+    #[serde(rename = "ContactID")]
+    pub invoice_id: String,
+    pub invoice_number: String,
+}
+
 /// ... Some fields missing ...
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
