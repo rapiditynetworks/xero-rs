@@ -36,4 +36,5 @@ pub mod accounting {
     pub use resources::contacts::*;
     pub use resources::invoices::*;
     pub use resources::items::*;
+    pub use resources::payments::*;
 }
