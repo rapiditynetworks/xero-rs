@@ -146,7 +146,7 @@ pub struct PaymentParams<'a> {
 
     pub date: NaiveDate,
     pub amount: f64,
-    pub reference: Option<String>, // ie. a memo
+    pub reference: Option<&'a str>, // ie. a memo
     pub is_reconciled: Option<bool>,
     pub status: Option<PaymentStatus>,
     pub payment_type: Option<PaymentType>,
