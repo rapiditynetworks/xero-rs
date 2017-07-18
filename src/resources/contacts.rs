@@ -111,8 +111,11 @@ impl XmlSerializable for PhoneType {
 #[serde(rename_all = "PascalCase")]
 pub struct Phone {
     pub phone_type: PhoneType,
+    #[serde(default)]
     pub phone_number: String,
+    #[serde(default)]
     pub phone_area_code: String,
+    #[serde(default)]
     pub phone_country_code: String,
 }
 
