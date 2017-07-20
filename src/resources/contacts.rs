@@ -214,6 +214,7 @@ impl<'a> XmlSerializable for ContactParams<'a> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct ContactSummary {
+    #[serde(default)]
     #[serde(rename = "ContactID")]
     pub contact_id: String,
     pub name: String,
