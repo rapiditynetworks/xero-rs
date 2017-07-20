@@ -167,7 +167,9 @@ pub struct InvoiceSummary {
 #[serde(rename_all = "PascalCase")]
 pub struct Invoice {
     pub contact: ContactSummary,
+    #[serde(rename = "DateString")]
     pub date: NaiveDateTime,
+    #[serde(rename = "DateDueString")]
     pub due_date: Option<NaiveDateTime>,
     pub status: InvoiceStatus,
     pub line_amount_types: LineAmountType,

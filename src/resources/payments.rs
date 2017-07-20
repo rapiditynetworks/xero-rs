@@ -203,6 +203,7 @@ impl<'a> XmlSerializable for PaymentParams<'a> {
 pub struct Payment {
     #[serde(rename = "PaymentID")]
     pub payment_id: String,
+    #[serde(rename = "DateString")]
     pub date: NaiveDateTime,
     pub amount: f64,
     pub payment_type: PaymentType,
