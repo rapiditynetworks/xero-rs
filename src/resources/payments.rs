@@ -203,8 +203,10 @@ impl<'a> XmlSerializable for PaymentParams<'a> {
 pub struct Payment {
     #[serde(rename = "PaymentID")]
     pub payment_id: String,
-    #[serde(rename = "DateString")]
-    pub date: NaiveDateTime,
+    // FIXME: Invoice has DateString, but I guess Payment might not---
+    // TODO: see if this is actually Optional or whether we should just use C# Date format
+    // #[serde(rename = "DateString")]
+    // pub date: NaiveDateTime,
     pub amount: f64,
     pub payment_type: PaymentType,
     pub status: PaymentStatus,
