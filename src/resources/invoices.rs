@@ -157,7 +157,7 @@ pub struct InvoiceSummary {
     pub contact: ContactSummary,
     #[serde(rename = "Type")]
     pub invoice_type: InvoiceType,
-    #[serde(rename = "ContactID")]
+    #[serde(rename = "InvoiceID")]
     pub invoice_id: String,
     pub invoice_number: String,
 }
