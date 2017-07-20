@@ -173,7 +173,7 @@ pub struct Invoice {
     pub due_date: Option<NaiveDateTime>,
     pub status: InvoiceStatus,
     pub line_amount_types: LineAmountType,
-    pub subtotal: f64,
+    pub subtotal: Option<f64>,
     pub total_tax: f64,
     pub total: f64,
     pub total_discount: Option<f64>,
