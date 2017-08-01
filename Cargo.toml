@@ -14,6 +14,7 @@ categories = ["api-bindings"]
 travis-ci = {repository = "rapiditynetworks/xero-rs"}
 
 [dependencies]
+bigdecimal = { git = "https://github.com/rapiditynetworks/bigdecimal-rs.git", features = ["serde"] }
 chrono = { version = "^0.3", features = ["serde"] }
 hyper = "^0.10"
 hyper-openssl = "^0.2"

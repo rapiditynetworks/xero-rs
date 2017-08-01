@@ -1,3 +1,4 @@
+use bigdecimal::BigDecimal;
 use xml::EventWriter;
 use xml::writer::{EmitterConfig, XmlEvent};
 
@@ -99,7 +100,7 @@ impl XmlSerializable for f32 {
 impl XmlSerializable for f64 {
     fn write(&self, xml: &mut XmlWriter) -> Result<(), XmlError> {
         xml.write(&self.to_string())
-    }
+     }
 }
 impl<'a> XmlSerializable for &'a str {
     fn write(&self, xml: &mut XmlWriter) -> Result<(), XmlError> {
@@ -108,6 +109,12 @@ impl<'a> XmlSerializable for &'a str {
 }
 impl XmlSerializable for String {
     fn write(&self, xml: &mut XmlWriter) -> Result<(), XmlError> {
-        xml.write(&self)
+        xml.write(self)
+    }
+}
+
+impl XmlSerializable for BigDecimal {
+    fn write(&self, xml: &mut XmlWriter) -> Result<(), XmlError> {
+        xml.write(&self.with_scale(4).to_string())
     }
 }
