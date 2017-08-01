@@ -1,6 +1,6 @@
 
 use bigdecimal::BigDecimal;
-use chrono::{NaiveDate, NaiveDateTime, UTC};
+use chrono::{NaiveDate, UTC};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
 use error::Error;
