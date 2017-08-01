@@ -1,3 +1,5 @@
+
+use bigdecimal::BigDecimal;
 use chrono::{NaiveDate, NaiveDateTime, UTC};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
@@ -151,7 +153,7 @@ pub struct PaymentParams<'a> {
     pub account: Option<PaymentAccount<'a>>,
 
     pub date: NaiveDate,
-    pub amount: f64,
+    pub amount: BigDecimal,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<&'a str>, // ie. a memo
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -172,7 +174,7 @@ impl<'a> Default for PaymentParams<'a> {
             overpayment: None,
             account: None,
             date: UTC::today().naive_utc(),
-            amount: 0.0,
+            amount: BigDecimal::from(0).with_scale(4),
             reference: None,
             is_reconciled: None,
             status: None,
@@ -198,7 +200,7 @@ impl<'a> XmlSerializable for PaymentParams<'a> {
 }
 
 /// ... Some fields missing ...
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Payment {
     #[serde(rename = "PaymentID")]
@@ -207,7 +209,7 @@ pub struct Payment {
     // TODO: see if this is actually Optional or whether we should just use C# Date format
     // #[serde(rename = "DateString")]
     // pub date: NaiveDateTime,
-    pub amount: f64,
+    pub amount: BigDecimal,
     pub payment_type: PaymentType,
     pub status: PaymentStatus,
     pub is_reconciled: bool,

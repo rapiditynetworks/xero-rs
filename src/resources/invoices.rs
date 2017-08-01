@@ -1,3 +1,4 @@
+use bigdecimal::BigDecimal;
 use chrono::{NaiveDate, NaiveDateTime};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
@@ -79,9 +80,9 @@ pub struct LineItemParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub item_code: Option<&'a str>,
     pub quantity: Option<f64>,
-    pub unit_amount: Option<f64>,
+    pub unit_amount: Option<BigDecimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub line_amount: Option<f64>,
+    pub line_amount: Option<BigDecimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tax_amount: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -151,7 +152,7 @@ impl<'a> XmlSerializable for InvoiceParams<'a> {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct InvoiceSummary {
     pub contact: ContactSummary,
