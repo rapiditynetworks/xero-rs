@@ -15,15 +15,15 @@ travis-ci = {repository = "rapiditynetworks/xero-rs"}
 
 [dependencies]
 bigdecimal = { git = "https://github.com/rapiditynetworks/bigdecimal-rs.git", features = ["serde"] }
-chrono = { version = "^0.3", features = ["serde"] }
+chrono = { version = "^0.4", features = ["serde"] }
 hyper = "^0.10"
 hyper-openssl = "^0.2"
 openssl = "^0.9"
-percent-encoding = "1.0.0"
-rand = "0.3.15"
-rustc-serialize = "0.3"
-serde = "^0.9"
-serde_derive = "^0.9"
-serde_json = "^0.9"
-serde_urlencoded = "^0.4"
-xml-rs = "0.6"
+percent-encoding = "^1.0"
+rand = "^0.3"
+rustc-serialize = "^0.3"
+serde = "^1.0"
+serde_derive = "^1.0"
+serde_json = "^1.0"
+serde_urlencoded = "^0.5"
+xml-rs = "^0.6"

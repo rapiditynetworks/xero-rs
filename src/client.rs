@@ -1,6 +1,6 @@
 use application::Application;
 use error::{Error, RequestError};
-use hyper::Client as HttpClient;
+use hyper;
 use hyper::client::RequestBuilder;
 use hyper::header::{Accept, Headers};
 use hyper::net::HttpsConnector;
@@ -9,10 +9,8 @@ use serde;
 use serde_json as json;
 use std::io::Read;
 
-// TODO: Probably use trait
-
 pub struct Client {
-    client: HttpClient,
+    client: hyper::Client,
     application: Box<Application>
 }
 
@@ -24,18 +22,18 @@ impl Client {
     pub fn new<App: Application + 'static>(app: App) -> Client {
         let tls = OpensslClient::new().unwrap();
         let connector = HttpsConnector::new(tls);
-        let client = HttpClient::with_connector(connector);
+        let client = hyper::Client::with_connector(connector);
         Client {client: client, application: Box::new(app)}
     }
 
-    pub fn get<'a, T: serde::Deserialize>(&'a self, path: &'a str) -> Result<T, Error> {
+    pub fn get<'a, T: serde::de::DeserializeOwned>(&'a self, path: &'a str) -> Result<T, Error> {
         let url = Client::url(path);
         let headers = self.headers("GET", &url)?;
         let request = self.client.get(&url).headers(headers);
         send(request)
     }
 
-    pub fn put<T: serde::Deserialize>(&self, path: &str, body: &[u8]) -> Result<T, Error> {
+    pub fn put<T: serde::de::DeserializeOwned>(&self, path: &str, body: &[u8]) -> Result<T, Error> {
         let url = Client::url(path);
         let headers = self.headers("PUT", &url)?;
         let request = self.client.put(&url).headers(headers).body(body);
@@ -52,7 +50,7 @@ impl Client {
     }
 }
 
-fn send<T: serde::Deserialize>(request: RequestBuilder) -> Result<T, Error> {
+fn send<T: serde::de::DeserializeOwned>(request: RequestBuilder) -> Result<T, Error> {
     let mut response = request.send()?;
     let mut body = String::with_capacity(4096);
     response.read_to_string(&mut body)?;

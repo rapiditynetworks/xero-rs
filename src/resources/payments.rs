@@ -1,6 +1,6 @@
 
 use bigdecimal::BigDecimal;
-use chrono::{NaiveDate, UTC};
+use chrono::{NaiveDate, Utc};
 use client::Client;
 use encoding::{XmlError, XmlSerializable, XmlWriter};
 use error::Error;
@@ -173,7 +173,7 @@ impl<'a> Default for PaymentParams<'a> {
             prepayment: None,
             overpayment: None,
             account: None,
-            date: UTC::today().naive_utc(),
+            date: Utc::today().naive_utc(),
             amount: BigDecimal::from(0).with_scale(4),
             reference: None,
             is_reconciled: None,

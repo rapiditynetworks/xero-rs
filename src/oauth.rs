@@ -117,7 +117,7 @@ fn generate_nonce() -> Result<String, Error> {
 }
 
 fn generate_timestamp() -> String {
-    chrono::UTC::now().timestamp().to_string()
+    chrono::Utc::now().timestamp().to_string()
 }
 
 
